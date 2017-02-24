@@ -1,0 +1,263 @@
+cron
+기능 - crontab 파일 관리
+형식 - crontab -u [USER ID] [OPTION]
+옵션 
+		-e 사용자의 crontab 편집
+		-l crontab 파일의 목록 출력
+		-r crontab 파일을 삭제
+
+ex) crontab list 확인
+	-> #crontab -l
+     cron_user의 crontab을 수정
+	 -> #crontab -u cron_user -e		
+	
+#vi /etc/crontab
+
+crontab 파일의 형식
+- crontab 파일은 사용자 별로 생성되며, 해당 파일에는
+  반복할 작업의 내용이 있다.
+- 여러개의 작업도 저장 할 수 있으며, 한 행에 하나의 작업
+  만 설정해야한다.
+
+  분		시		일		월			요일		작업내용
+  0~59   0~23	1~31  1~12		0~6		반복할 작업의 내용
+- 일요일 (0), 월요일 (1), 토요일 (6)이며, 각 항목은 공백 문자로 구분.
+- 항목의 값이 '*' (asterisk)이면 해당 항목의 모든 값을 의미함.
+- ' - ' 두 숫자 사이에 포함된 범위 (ex) 1-5 -> 1,2,3,4,5
+- ' , ' 로 구분하여 나열된 숫자 중 일치하는 경우를 뜻한다.
+- ' / ' 로 시간 간격을 정할 수 있다.
+
+ex) 30		23		1		*		*	cp /home/test /backup/test
+- 매요일 매월 1일 23시 30분에 cp /home/test /backup/test
+
+ex) */2	10		*		*		*	cp /home/test /backup/test
+- 매요일 매월 매일 10시부터 2분마다 cp /home/test /backup/test
+
+ex) 1-10	12		 *		 *	    *
+매요일 매월 매일 12시 1분 ~ 10분까지 
+
+crontab -e 
+- crontab 파일 생성과 편집
+- /var/spool/cron 디렉토리에 사용자 이름으로 예약 작업 파일 생성
+
+crontab -l
+- 파일 내용 확인 하기, 현재 사용자의 crontab 내용 출력
+
+ wcronch -d -n 1 "ls /practice/cron_test/"
+ 
+ cd /practice/cron_test
+ 
+ crontab 명령 사용 제한하기
+ /etc/cron.allow, /etc/cron.deny 파일로 사용자의 접근을
+ 허용/차단 할 수 있다.
+ 
+ cron의 사용권한 설정
+- /etc/cron.allow 파일이 있으면, cron.allow에 명시된 사용자만 사용이 가능.
+- /etc/cron.allow 파일이 없다면, cron.deny에 명시된 사용자를 제외하고 사용 가능.
+- 두 파일 모두 없다면 root 만 사용이 가능.
+- 두 파일 모두 이름이 있다면 /etc/cron.allow가 우선 적용되어 cron 사용 가능
+- cron.deny 파일을 빈파일로 두면 모든 사용자가 cron 명령어 실행 가능 (기본값)
+
+------------------------------------------------------------------------------------------
+디스크 추가 0.25GB -> Reboot
+
+fdisk -l 				// 추가 된 Disk 의 장치명 확인
+/dev/sdc 			//장치명
+
+ㅊ (주파티션) 50MB
+       sdc2 (주파티션) 50MB
+       sdc3 (확장파티션)
+	   sdc5 (논리파티션) 50MB
+	   sdc6 (논리파티션) 나머지 전부
+	   
+
+
+mkfs (make filesystem)
+mkfs [옵션] [장치명]
+옵션 : -t 파일 시스템의 타입을 지정
+
+mkfs -t ext4 /dev/sdc1
+mkfs -t ext4 /dev/sdc2
+mkfs -t ext4 /dev/sdc5
+mkfs -t ext4 /dev/sdc6
+
+디스크추가 -> 파티션 생성	-> 파일시스템
+
+마운트 - 특정 디렉토리에 파일시스템을 탑재 하는 것
+리눅스는 파일 단위로 모든 장치를 관리하기때문에 새롭게 만든 파일 시스템을
+사용하기위해서는 생성된 디스크 장치를 임의의 디렉토리에 마운트 시켜 사용해야한다.
+
+마운트 포인트 - 파일시스템을 디렉토리에 연결 시켜야하는데, 이때 연결되는 디렉토리를
+                      의미 
+
+#mount				//현재 시스템 마운트 정보 확인
+#mount [장치이름] [마운트포인트]
+#mount -t [유형] -o [옵션] [장치이름] [마운트포인트]
+
+
+디스크추가 -> 파티션 생성	-> 파일시스템 생성 -> 마운트 포인트 생성 -> 마운트
+
+mkdir /PART-{1..4}
+mount /dev/sdc1	/PART-1
+mount /dev/sdc2 /PART-2
+mount /dev/sdc5 /PART-3
+mount /dev/sdc6 /PART-4
+
+df (Disk Free) - 파일 시스템 및 파티션 자세한 용량 확인 
+-a 모든 파일 시스템 출력
+-i inode 사용정보 출력
+-h 용량을 읽기 쉽게 출력
+
+du (Disk Usage) - 특정 디렉토리나 파일의 용량을 확인
+-h 용량을 읽기 쉽게 출력
+-s 요약
+
+
+/etc/fstab 필드
+1. 파일시스템 장치명				/dev/sdc1
+2. 마운트 포인트					/PART-1
+3. 파일시스템 종류 				ext4
+4. 마운트 옵션						defaults
+5. 덤프 (백업 파일생성 유무)   0				
+6. 파일시스템 무결성 검사      0
+
+/dev/sdc1	/PART-1	ext4	defaults	0 0
+/dev/sdc2   /PART-2	ext4	defaults	0 0
+/dev/sdc5	/PART-3	ext4  defaults	0 0
+/dev/sdc6	/PART-4 ext4	defaults	0 0
+
+blkid - UUID 확인 명령어
+UUID - 범용 고유 식별자
+
+UUID=063f6fee-1805-4bc6-947e-cc52b46ce58b
+UUID=3c338ce5-0091-4add-92e2-7aae75a14cbc
+UUID=33c8b0c6-6308-404b-9ae1-5a0cfd7cdb77
+UUID=3421ea84-9633-4708-9592-847137175486
+
+vi /etc/fstab 
+첫 번째 필드를 변경
+
+UUID=063f6fee-1805-4bc6-947e-cc52b46ce58b /PART-1 ext4 defaults 0 0
+UUID=3c338ce5-0091-4add-92e2-7aae75a14cbc /PART-2 ext4 defaults 0 0
+UUID=33c8b0c6-6308-404b-9ae1-5a0cfd7cdb77 /PART-3 ext4 defaults 0 0
+UUID=3421ea84-9633-4708-9592-847137175486 /PART-4 ext4 defaults 0 0
+디스크추가 -> 파티션 생성	-> 파일시스템 생성 -> 마운트 포인트 생성 -> 마운트(UUID)
+-> /etc/fstab 추가
+--------------------------------------------------------------------------------------------------
+RAID
+
+Linear RAID
+- 선형 RAID는 여러 개의 디스크를 연결해 하나의 큰 가상의 디스크를 만든다.
+- 첫 번째 디스크가 완전히 채워지면 순차적으로 다음 디스크에 데이터를 저장한다.
+- 성능면에서는 별다른 장점이없으며, 하나의 디스크 오류가 나면 묶유 있던 파티션
+  전체에 오류가 나기때문에 안정성이 떨어진다.
+- Linear RAID 용량은 모든 Disk의 총 용량과 같다.
+--------------------------------------------------------------------------------------------------
+Server-A 스냅샷을 통해 초기화
+Disk 9개 추가 (0.25GB)
+재부팅 
+--------------------------------------------------------------------------------------------------
+fdisk -l   		// dev/sda를 제외한 /dev/sdb ~ /dev/sdj 까지 9개의 Disk 확인
+
+/dev/sdb, /dev/sdc  --> 2개 Linear RAID
+mdadm
+RAID 생성
+mdadm --create [생성할장치명] --level=[레이드레벨] --raid-devices=[disk갯수] [장치명] .... [장치명]
+RAID 정보 확인 
+mdadm --detail --scan
+RAID 정보 파일
+/proc/mdstat
+RAID 구성 후 적용할 명령어
+mdadm --detail --scan > /etc/mdadm.conf
+
+RAID 0
+- 스트라이핑 (Striping) RAID 라고도 한다.
+- 데이터를 여러 개의 디스크에 나누어 쓰고 읽어 드려 데이터를 중복해서 기록하지 않기 때문에,
+  가장 높은 입출력 성능을 제공한다 (가장 큰 장점)
+- RAID0의 용량은 모든 DISK 총량과 같다.
+- 데이터 보호 기능이 없다. ( Fault-Tolerant  기능 X)
+
+
+예를들어 1TB Disk와 10TB Disk 두개를 이용하여 RAID 구성한다고 가정
+각 RAID 총량은? 
+		Linear RAID 총량 : 11TB
+		      RAID 0 총량 : 2TB
+-----------------------------------------------------------------------------------------------------------			  
+
+1. fdsik /dev/sdd -> 주파티션 1개 용량 전부 채워서 생성 -> 타입 fd
+2. fdisk /dev/sde -> 주파티션 1개 용량 전부 채워서 생성 -> 타입 fd
+3. mdadm --create /dev/md0 --level=0 --raid-devices=2 /dev/sdd1 /dev/sde1
+4. mkfs -t ext4 /dev/md0
+5. mkdir /RAID-0
+6. mount /dev/md0 /RAID-0
+7. df -h
+8. mdadm --detail --scan > /etc/mdadm.conf
+
+blkid 명령어를 이용하여 /dev/md0, /dev/md9 UUID확인 하여 /etc/fstab에 등록
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
+  
+  
+
+
+
+
+
+
+
+					  
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+		
+		
+		

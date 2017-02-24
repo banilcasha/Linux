@@ -1,0 +1,243 @@
+작업 예약 at & cron
+- 주기적으로 반복해야 하는 작업에 사용하는 데몬
+
+at
+#rpm -qa | grep at 			// at 사용하기 위한 패키지 설치 유무 확인
+#rpm -qa | grep mail        // mail 패키지 설치 유무 확인
+#yum -y install at				//at 패키지 설치	
+#yum -y install mail     		//mail 패키지 설치
+#rpm -qa | grep at 			// at 사용하기 위한 패키지 설치 유무 확인
+#rpm -qa | grep mail        // mail 패키지 설치 유무 확인
+
+cron 설치
+#rpm -qa | grep cron		// 설치 유무 확인
+
+at 
+기능 - 정해진 시간에 한번 실행
+형식 - at [옵션] [시간]
+옵션 -l 현재 실행 대기중인 목록을 출력 (#atq)
+       -r 현재 실행 대기중인 명령에서 해당 작업 번호 삭제 (#trm)
+
+#yum -y install man			//man 패키지 설치
+시간 형식
+yyyy-mm-dd,HH:MM, HHMM,today,tomorrow,hours,days,weeks,now
+midnight,teatime
+
+ex) #at 6pm + 4days		 //지금 부터 4일 후 오후6시에 작업을 수행
+     #at 10am jul 18      //7월18일 오전 10시에 작업을 수행
+	 #at 3am tomorrow  //내일 오전3시에 작업을 수행
+	 #at 10:00am today  //오늘 오전 10시에 작업을 수행
+
+#service atd start	 
+	 
+#at now + 1min
+at>mkdir -p /practice/01-19
+at>echo "at test!!" > /practice/01-19/at-test
+at><EOT>													//Ctrl + D 저장
+
+#atq
+[작업번호] [날짜] [시간] [큐이름] [사용자계정]
+3	2017-01-18 01:53 a root
+
+at 예약 작업은 /var/spool/at 디렉토리에 큐 파일이 임시 저장된 후,
+작업이 완료되면 자동으로 삭제되며, 명령의 실행 결과는 /var/spool/mail
+디렉토리에 사용자 명으로 결과가 저장된다.
+
+at의 사용권한 설정
+- /etc/at.allow 파일이 있으면, at.allow에 명시된 사용자만 사용이 가능.
+- /etc/at.allow 파일이 없다면, at.deny에 명시된 사용자를 제외하고 사용 가능.
+- 두 파일 모두 없다면 root 만 사용이 가능.
+- 두 파일 모두 이름이 있다면 /etc/at.allow가 우선 적용되어 at 사용 가능
+- at.deny 파일을 빈파일로 두면 모든 사용자가 at 명령어 실행 가능 (기본값)
+
+- /etc/at.allow 파일이 있으면, at.allow에 명시된 사용자만 사용이 가능.
+1.vi /etc/at.allow						ronaldo
+#su - messi
+   $at 								//사용 불가능
+2.mv /etc/at.allow /etc/at.allow.bk
+  vi /etc/at.deny 						ronaldo
+  #su - ronaldo					     	//스위칭
+  $at										//ronaldo 계정 사용 at 사용 불가능 확인
+  $exit									//다시 루트 계정으로 로그아웃
+  #su - messi							//messi 계정으로 스위칭
+  $at										//사용 가능 확인
+  $exit									//로그아웃
+										
+- 두 파일 모두 없다면 root 만 사용이 가능								
+#mv /etc/at.deny /etc/at.deny.bk
+#su - ronaldo 							// 스위칭
+$at
+$exit										// 로그아웃
+#su - messi								// 스위칭
+$at
+$exit										// 로그아웃
+- 두 파일 모두 이름이 있다면 /etc/at.allow가 우선 적용되어 at 사용 가능
+#mv /etc/at.deny.bk  /etc/at.deny
+#mv /etc/at.allow.bk /etc/at.deny.allow
+#vi /etc/at.deny			
+	ronaldo					두 파일 모두 동일한 계정 입력 후 저장
+#vi /etc/at.allow
+	ronaldo 
+#su - ronaldo
+$at 
+------------------------------------------------------------------------------------------
+리눅스 마스터 1,2 급 시험 문제
+ALSA	- 사운드 카드 관련 데몬
+CUPS - 프린터 관련 데몬
+SANE - 스캐너, 비디오 캠 관련 데몬
+------------------------------------------------------------------------------------------
+파일 시스템 관리
+
+파일 시스템이란?
+- 파일이나 자료를 쉽게 발견 및 접근 할 수 있도록 보관 또는 조직하는 체제
+- 파일 저장 및 검색을 용이하도록 유지/관리하며 빠르게 읽고 사용 할 수 있도록
+  만들어 놓은 규칙 
+  
+리눅스 지원 파일 시스템의 종류
+  - EXT3, EXT4, SWAP, XFS, NFS, ISO9660
+  
+EXT4 FileSystem
+- 1EB 의 파일 시스템 사이즈와 16TB의 최대 파일 사이즈 지원
+- 서브 디렉토리 64000개 지원, 파일은 약 40억개 
+
+- Disk의 종류
+1. IDE			(Intergrated Drive Electronics)
+2. SATA		(Serial Advance Technology Attacment)
+3. SCSI     (Small Computer System Interface)
+4. SAS       ( Sereal Attached SCSI)
+
+-------------------------------------------------------------------------------------------
+파티션 (Partition)
+하나의 물리적인 하드 디스크를 여러개의 논리적인 디스크로 나누는 것
+------------------------------------------------------------------------------------------
+SWAP 파티션
+- 하드 디스크 영역을 가상 메모치럼 사용 하기 위해 만든 파티션
+- 메모리가 부족할 경우, 하드 디스크를 사용하여 예비 공간을 역할을 함
+
+레드햇 권고
+RAM			SWAP
+2GB이하		RAM 2배
+2~8GB		RAM과 공일
+8~64GB		4GB 이상
+------------------------------------------------------------------------------------------
+리눅스 파티션
+- 파티션은 주 파티션(Praimary)과 확장(extended)파티션 그리고 논리(Logical)
+  파티션으로 구분된다.
+  
+  Disk 하나 당 주 파티션은 4개까지 생성이 가능
+  그 이상 파티션이 필요할 경우 확장 파티션을 생성
+  확장 파티션은 다시 논리파티션으로 나누어지고 최대 12개까지 생성이 가능하다.
+ 
+  3개 주 파티션, 1개의 확장 파티션, 12개의 논리파티션으로 나눌 수 있다.
+  확장 파티션은 논리 파티션을 위한 파티션이기때문에 저장 공간으로
+  사용할 수 없다.
+  
+  실제 데이터가 저장되는 파티션은 주 파티션과, 논리 파티션
+  
+  파티션 명칭
+  
+  ex) /dev/sda	1번 disk			/dev/sdc		3번 disk 
+      /dev/sdb  2번 disk 			/dev/sdd		4번 disk
+	  
+1개의 disk 1개 의 파티션
+/dev/sda1
+
+1개의 disk 3개의 파티션
+
+/dev/sda1
+/dev/sda2
+/dev/sda3
+
+Disk 2개 , 각각 2개의 파티션
+/dev/sda1
+/dev/sda2
+
+/dev/sdb1
+/dev/sdb2
+
+1개의 disk에 1개의 주파티션, 1개의 확장 파티션, 1개의 논리파티션
+
+/dev/sda1 ~ /dev/sda4	[주파티션]  
+		   
+/dev/sda5	[확장파티션]
+/dev/sda6 	[논리파티션]
+
+------------------------------------------------------------------------------------------
+fdisk (파티션 생성/수정)
+fdisk [옵션] [장치명]
+-l 디스크 정보 출력
+n   add a new partition				//새로운 파티션 추가
+d   delete a partition					//파티션 제거
+p   print the partition table			//해당 디스크 파티션 목록 출력
+t   change a partition's system id //파티션 타입 변경
+w   write table to disk and exit    //저장 후 종료
+
+새로운 Disk 추가 -> 파티션 생성 (주파티션1개)
+#fdisk /dev/sdb
+n						(파티션 생성)
+------------------------------------------------------------------------------------------
+파일 시스템 관리 명령어
+
+/dev/sdb 디스크를 주파티션 4개로 생성 하여라
+각 파티션의 용량은 64MB
+
+fdisk -l /dev/sdb
+
+/dev/sdb1
+/dev/sdb2
+/dev/sdb3
+/dev/sdb4
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,112 @@
+-----------------------------------------------------------------------------------------
+usermod - 사용자 정보 수정
+usermod [옵션] [계정]
+-c : 사용자 이름 또는 정보
+-d : 사용자 계정 홈 디렉토리
+-e : 사용자 계정 유효 기간
+-f : 비활성 기간
+-g : 기본 그룹
+-G : 추가 그룹 변경
+-s : 기본 로그인 셀
+-u : 사용자 계정 uid
+-m : 홈디렉토리 변경시, 새 홈딩렉토리로 파일 이동(-d 옵션하고만 사용할 수 있음)
+-l : 사용자명 변경
+-L : 사용자의 패스워드에 Lock을 걸어 로그인 제한
+------------------------------------------------------------------------------------------
+
+passwd - 패스워드 설정
+passwd [계정명]
+일반사용자는 암호변경 시 현재 암호를 한번더 입력한다.
+-S : username에 대한 패스워드정보를 알 수 있다.
+	[사용자 이름][상태][변경날짜][최소값변경][최대값변경][경고]
+	LK - Lock (NP)
+	NP - No Passwd
+	PS - Password Set
+-l : 사용자의 패스워드에 lock을 걸어 로그인을 막는다.
+-u : 사용자에게 걸려있는 패스워드를 푼다.
+-d : 사용자의 패스워드를 제거한다. 패스워드없이 로그인이 가능하다.
+
+암호를 이용한 로그인 제어
+passwd -l [계정명]
+- /etc/shadow 파일에 암호 필드에 !!으로 표시 (잘못된 password라고 출력됨)
+passwd -u [계정명]
+- 계정 잠금 해제
+
+echo 'P@ssw0rd' | passwd --stdin testuser
+
+1. 암호를 숫자로만 지정해서는 안된다.
+2. 사전적인 쉬운 단어로 지정해서는 안된다.
+3. 6자 이상으로 만들어야 한다 (/etc/login.defs)
+4. 새로운 암호는 이전 암호와 동일해서는 안된다.
+5. 여려 문자와 숫자 조합으로 최소8자 이상 만들어야 한다.
+
+(3) 패스워드 변경시의 에러메시지
+1) BAD PASSWORD: it's WAY too short 또는 BAD PASSWORD: it is too short
+    => 패스워드의 길이가 짧은 경우
+2) Sorry, passwords do not match
+    => 두 번 입력한 패스워드가 동일하지 않은 경우
+3) BAD PASSWORD: it is based on your username
+    => 패스워드에 ID가 들어있는 경우 
+4) Password unchanged
+    => 현재 패스워드와 동일하게 입력한 경우
+5) BAD PASSWORD: is too similar to the old one
+    => 현재 패스워드와 유사하거나 숫자 하나정도만 바뀐 경우
+6) passwd: Authentication token manipulation error
+    => 현재 패스워드와 틀리게 입력한 경우
+7) BAD PASSWORD: it is based on a dictionary word
+    => 새로 변경할 패스워드가 사전에 들어간 단어가 포함되어 있는 경우
+8) passwd: Only root can specify a user name.
+    => 다른 사용자의 패스워드를 변경하려고 시도한 경우
+9) BAD PASSWORD: it does not contain enough DIFFERENT characters
+    => 여러 문자로 패스워드를 설정해야 하는데 한두문자로 패스워드를 설정한 경우
+10) BAD PASSWORD: it too simple
+    => 패스워드가 너무 단순한 경우
+(4) 패스워드 변경 성공시의 메시지
+   passwd: all authentication tokens updated successfully
+-----------------------------------------------------------------------------------------
+shadow password system (shadow-utils 패키지)
+cat /etc/passwd | grep root
+pwunconv -> 암호필드 disable
+pwconv -> 암호 필드 enable
+-----------------------------------------------------------------------------------------
+사용 자 및 그룹 파일 무결성 검사
+1) pwck (password check) /etc/passwd파일과 /etc/shadow파일을 검사
+- filed의 설정 검사
+- 사용자와 그룹아이디 설정 검사
+- 기본 그룹의 존재 유무 검사
+- 홈디렉토리가 존재 유무 검사
+- 로그인쉘이 존재 유무 검사
+- 패스워드가 없는 계정의 존재 유무 검사  
+
+2) grpck (group password check) - /etc/group과 /etc/gshadow 파일 검사
+- field의 설정 검사
+- 그룹아이디와 이름의 설정 검사
+- 사용자와 관리자의 설정 검사
+-----------------------------------------------------------------------------------------
+groupadd - 그룹 추가 
+groupmod - 그룹 수정
+groupdel - 그룹 제거
+gpasswd - 그룹 관리
+newgrp - 자신의 소속된 그룹을 바꾼다.
+	노옵션 - 원래자신의GID로 변경
+	newgrp [2차그룹]
+id,whoami,users	
+	
+=> 보통 'newgrp 2차_그룹'하게 되면 2차 그룹에 속하게 된다. 
+이 상태에서 새로운 그룹명을 입력하지 않고 newgrp 라고만 치면 원래 gid로 변환된다.
+-----------------------------------------------------------------------------------------
+chage - 사용자 계정 관리
+-l : 설정 내용 확인
+-m : 암호를 변경한 후 다시 변경할 수 있는 최소 기간 (0값은 아무때나 암호 변경이 가능)
+-M : 유효한 암호의 최대 일 수
+-W : 사용자가 암호를 바꿀때 까지 경고할 일 수 (ex 4 -> 3일, 2일, 1일, 0일)
+-I : 암호 유효기간이 만료된 후 사용자의 계정이 비활성화될 일 수
+-E : 사용자가 계정을 사용할 수 있는 유효기간 YY/MM/DD 
+-d : 사용자가 암호를 변경한 마지막 일자
+
+chage -m 설정이 /etc/shadow 4번째 필드에 해당 
+chage -M 설정이 /etc/shadow 5번째 필드에 해당
+chage -W 설정이 /etc/shadow 6번째 필드에 해당
+chage -I 설정이 /etc/shadow	7번째 필드에 해당
+chage -E 설정이 /etc/shadow 8번째 필드에 해당
+-----------------------------------------------------------------------------------------

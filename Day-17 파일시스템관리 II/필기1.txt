@@ -1,0 +1,62 @@
+blkid | sort
+
+UUID=6cb58d9a-ff55-40ce-9bba-b46586e943b7	/RAID-0 ext4 defaults 0 0
+UUID=81baba8b-aa2e-4d63-9fd9-d753287c0d27	/RAID-1 ext4 defaults 0 0
+UUID=369281dc-04b8-486b-9534-62b01aa03e49	/RAID-5 ext4 defaults 0 0
+UUID=c037e13d-9d2a-46f2-b2ae-ee928ac9ea5e	/RAID-Linear ext4 defaults 0 0
+
+Fault Tolerant 기능 유무 확인 
+RAID Linear	 - X		/dev/sdb /dev/sdc 		2	(3)		
+RAID 0		 - X       /dev/sdd /dev/sde			4	(5)	
+RAID 1        - O      /dev/sdf  /dev/sdg			6	(7)
+RAID 5        - O      /dev/sdh /dev/sdi /dev/j  8  (9) 10
+리부팅 후 df -h
+
+mdadm --detail /dev/md0		
+mdadm --detail /dev/md9
+---------------------------------비교
+mdadm --detail /dev/md1
+mdadm --detail /dev/md5
+
+1. Disk 2개 추가 후 파티션 생성 후 타입 fd 변경
+
+RAID Linear  /dev/sdc
+RAID 0		 /dev/sde
+RAID 1        /dev/sdg
+RAID 5        /dev/sdi
+
+Linear Raid, 0 생성
+mdadm --stop /dev/md9
+mdadm --create /dev/md9 --level=linear --raid-devices=2 /dev/sdb1 /dev/sdc1
+mount /dev/md9 /RAID-Linear
+
+mdadm --stop /dev/md0
+mdadm --create /dev/md0 --level=0 --raid-devices=2 /dev/sdd1 /dev/sde1
+mount /dev/md0  /RAID-0
+
+RAID1 & 5 복구
+mdadm /dev/md1 --add /dev/sdg1
+cat /proc/mdstat  [_U] --> [UU]
+mdadm --detail /dev/md1
+
+RAID5 복수
+세션추가 화면 두개로 나누어 확인
+1.mdadm /dev/md5 --add /dev/sdi1	(대기)		2. watch -d -n 0.1 "cat /proc/mdstat" (대기)
+
+2번 세션 엔터 치고
+1번 세션 엔터 치고 2번 세션 확인
+
+RA
+
+
+
+
+
+
+
+
+
+
+
+
+

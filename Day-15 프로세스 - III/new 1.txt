@@ -1,0 +1,264 @@
+D:\리눅스 설치파일\Windows7.iso 
+C:\리눅스 설치파일\Windows7.iso 
+
+chmod - 허가권 변경 
+두가지 모드로 허가권 변경 할 수 있다.
+1. 기호모드 (상대값) (Symbolic Method) 사람의 입장
+2. 숫자모드 (절대값) (Absolute Method) 컴퓨터의 입장
+
+chmod [옵션] [기호/숫자모드] [파일/디렉토리]
+
+1. 기호 모드
++	:		허가 권한을 부여					u	:	사용자,소유자(User, owner)
+- 	:		허가 권한을 제거					g	:	소유 그룹/그룹(Group)
+=	:		허가 권한을 유지					o	:	기타사용자		(Other)
+s	:		SetUID, SetGID 권한 부여			a  : 	사용자,그룹,기타 사용자 모두
+t	:		Sticky Bit
+
+기호모드는 대상 (u, g, o, a)에 대해서 r, w, x 권한을 부여 혹은 제거할 것인가를
+모두 기호로 설정하는 것.
+
+ex) rwx r-x r-x	dongsam		그룹과 기타 사용자의 실행권 제거 할때
+#chmod g-x,o-x dongsam
+    rwx r-- r--
+ex) 그룹과 기타사용자에게 쓰기,실행 권한 부여
+#chmod g+wx,o+wx dongsam
+	rwx rwx rwx
+	
+#mkdir -p /practice/01-19			//디렉토리 생성
+#touch symbolic_test				//테스트 파일 생성
+#ll											//기본 파일 권한 확인
+
+1. symbolic_test 파일의 소유자와 그룹과 기타사용자에게 실행권한 추가
+rw- r-- r--	-> rwx r-x r-x
+1. #chmod a+x symbolic_test
+2. #chmod u+x,g+x,o+x symbolic_test
+
+2. symbolic_test 파일의 그룹에 쓰기 권한 추가
+rwx- r-x r-x ->	rwx rwx r-x
+#chmod g+w symbolic_test
+
+3. symbolic_test (rwx rwx r-x)
+소유자 쓰기,실행 권한제거, 그룹의 권한은 모두제거, 기타사용자는
+읽기만 가능하도록 설정
+r-- --- r--
+#chmod u-wx,g-rwx,o-x symbolic_test
+-----------------------------------------------------------------------------------
+2. 숫자모드 
+- 각각의 허가권 필드를 3자리의 8진수 표기
+- 완전한 표기법은 4자리이나 일반적으로 3자리를 사용
+
+사용자 필드		허가		기호모드			숫자모드
+사용자			읽기		r					400		(100단위)
+					쓰기		w					200		
+					실행		x					100
+					
+그룹				읽기		r					40			(10단위)
+					쓰기		w					20
+					실행		x 					10
+					
+기타사용자		읽기		r					4			(1단위)
+					쓰기		w					2
+					실행 		x					1
+					
+해당하는 부분의 숫자를 더하여 허가권을 변경.
+ex) rwx	r-x		r-x
+
+사용자	: rwx	= 400 + 200 + 100 = 700 
+그룹		: r-x	=	40	 +         10   =  50
+기타		: r-x   =  4   +          1    =   5 
+숫자모드 755
+
+2진수 표기		1 : 해당 권한 부여
+                    0 : 해당 권한 해제
+					
+사용자 필드			사용자				그룹			기타 사용자
+허가권				r	w	x				r	w	x		r	w	x
+자리수				4  2  1				4  2  1		4 	2  1
+2진수				    1  1  1				1  1  1		1  1  1
+8진수					    7					   7				7
+
+						r w x  	r - -   r -x 
+						111		100	101
+						1+2+4	4		4+1
+						7			4		5
+
+rwx	r--		rx-		->	746
+r-x		r-x    ---     -> 550
+rw-	--x   -w-		-> 612
+
+#mv symbolic_test absolute_test
+absolute_test
+rwx r-- r--		->	   744
+rwx r-x rwx		->    757
+rw- rw- rw-     ->    666
+-------------------------------------------------------------------------------------------  
+그룹멤버 확인 
+
+계정 생성 시 그룹 추가 : 
+useradd -g [gid] 계정명
+cat /etc/group
+
+계정 생성 후 그룹 추가  확인
+gpasswd -a [그룹명] [계정명]
+cat /etc/group
+-------------------------------------------------------------------------------------------
+Xshell 세션 2개 킨 후 
+1번 세션 root
+2번 세션 사용자 계정 
+
+1번 세션									2번 세션
+mkdir /practice/test					$
+cd /practice								cd /practice
+chmod 000 test						cd test										( --- --- ---)
+chmod 001 test						cd test 	--> ls	 -->cat > test 1		( --- --- --x)
+chmod 002 test						cd .. ; cd test 								( --- --- -w-)
+chmod 003 test						cd test ; ls									( --- --- -wx)
+chmod 004 test						cd .. ; cd test 								( --- --- r--)
+chmod 005 test						cd test ; ls ; cat > test1 			     	( --- --- r-x)
+chmod 006 test						cd test										( --- --- rw-)
+chmod 007 test						cd test ; ls ; cat > test1					(--- --- rwx-)
+
+alias grep='grep --color=auto' (세션)
+마우스 드래그 (복사) 마우스 오른쪽 클릭 (붙여넣기 설정 Xshell)
+-------------------------------------------------------------------------------------------------
+UMASK - 새로운 파일/디렉토리 생성시 기본 허가권 결정하는 기준이 되는값 (기본값022)
+디렉토리의 기본 퍼미션 777, 파일의 기본 퍼미션 666이다.
+해당 값에서 umask 값을 빼고 남은 값으로 퍼미션이 결정된다.
+					디렉토리 허가권				파일 허가권
+기본값				777							666
+UMASK				022							022
+결정된 허가권		755							644
+기호모드				rwx r-x r-x					rw- r-- r--
+#umask					//설정된 umask 확인		(022)
+#mkdir umask_test		//디렉토리 생성
+#touch umask_file 		//파일 생성
+#ll												// 허가권 확인
+#umask [변경값]				디렉토리 		파일
+#umask 007					770				660
+#umask 020					757				646
+#umask 022			//기본값으로 복구
+
+#vi /etc/login.defs
+특수 권한의 종류 (SetUID, SetGID, StickyBit)
+
+SetUID
+실행파일에 한해서 설정이 가능하며, SetUID 설정이 되어 있는 경우
+실행한 사용자가 아닌 파일을 소유한 사용자의 권한으로 명령(프로세스)이 실행된다.
+보통 root가 소요한 파일에 적용을하며, 해당 명령을 실행하는 순간에는 root권한을 갖는다.
+
+SetUID 설정 방법
+- 기호 모드 (u+s)
+- 숫자 모드 (4000)
+
+chmod u-s /bin/cat
+--------------------------------------------------------------------------------------------------
+Sticky Bit
+- 파일에도 적용이 가능하나 의미가 없어진 권한으로, 자주 사용하는 프로그램일 경우
+실행되는 로딩과정을 없에주는 기능을해서 성능을 향상 시킬 수 있었다.
+하지만 현재는 가상메모리 기술이 발달해서 사용할 필요가없다.
+
+모든 사용자가 생성/수정/삭제가 가능한 디렉토리에 적용을 하며, Sticky bit 설정후에는
+해당 파일의 소유자만 해당 파일을 삭제할 수 있가 있다.
+--------------------------------------------------------------------------------------------------
+적용방법
+기호모드 o+t
+숫자모드 1000
+
+#mkdir temp1
+#mkdir temp2
+#chmod 1777 temp1
+#chmod 777 temp2
+#touch temp1/sticky_test1
+#touch temp2/sticky_test2
+#chmod 777  temp1/sticky_test1
+#chmod 777  temp2/sticky_test2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+
+
+
+
+
+

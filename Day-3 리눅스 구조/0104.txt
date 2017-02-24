@@ -1,0 +1,59 @@
+실습을 위한 준비
+1. CentOS 6.8 CD image (.iso) 파일
+2. Windows 7 CD image (.iso)
+3. Xshell 5
+4. VMware Workstation 12
+
+환경설정
+1. VMware Network 설정
+-Edit-Virtual Network Editor- VMent8, NAT 설정되어있는지 (캡처 참조)
+ subnet IP : 100.100.100.0  subnet mask : 255.255.255.0 
+ gateway : 100.100.100.2 로 설정하기
+
+2. Xshell
+-서버 IP : 100.100.100.10:22
+
+3. Linux IP 설정
+# vi /etc/sysconfig/network-scripts/ifcfg-eth0
+
+i 입력 -> 수정가능으로 바뀜
+
+DEVICE=eth0
+TYPE=Ethernet
+ONBOOT=yes
+NM_CONTROLLED=no
+BOOTPROTO=static
+IPADDR=100.100.100.10
+NETMASK=255.255.255.0
+GATEWAY=100.100.100.2
+DNS1=8.8.8.8
+
+Shift + ; +wq + enter key -> :wq ->저장 후 종료
+
+VMware 재부팅하기
+--------------------------------------------------------------------------------------
+리눅스의 주요 명령어
+man, grep, which, find
+
+#yum -y install man : man 패키지 설치하겠다는 명령어
+--------------------------------------------------------------------------------------
+-mkdir : 디렉토리 만들기
+-mkdir -p : 하위 디렉토리까지 만들기
+ex) mkdir -p Linux/CentOS/6.8/2.6.32
+ex) day1~100의 디렉토리 생성할 때 : mkdir day{001..100} / day{a..z}
+
+-rmdir : 디렉토리 삭제 단, 하위에 파일이나 디렉토리가 있으면 삭제되지 않는다.
+--------------------------------------------------------------------------------------
+-cp : 파일이나 디렉토리 복사하기
+#cp /bin/ls /practice/day3/ls_backup : /bin/ls 파일을 /practice/day3의 하위에 ls_backup 라는 이름으로 복사하기
+
+#cp /bin/ls /practice/day3 : /practice/day3의 하위에 같은 이름으로 복사하기
+--------------------------------------------------------------------------------------
+-mv(move) : 파일이나 디렉토리를 이동하는 명령어
+#mv ls korea : (korea 라는 디렉토리가 있을경우)현재 위치의 ls 라는 파일을 korea 하위로 이동하기 /  (korea 라는 디렉토리가 없을경우) ls라는 파일을 현재위치에 korea라는 이름으로 변경
+--------------------------------------------------------------------------------------
+-rm (remove) : 파일이나 디렉토리 삭제하기
+옵션
+-f : 진짜로 지울건지 물어보지 않고 강제로 지움
+-i : 한번 더 물어봄
+-r : 하위 파일까지 지움

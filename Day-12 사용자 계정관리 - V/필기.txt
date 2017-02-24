@@ -1,0 +1,166 @@
+시나리오
+- 회사 사원들이 사용하는 디렉토리를 생성 후 사원들 만 사용 할 수 있는 권한을 주어 다른 사용자는
+  접근할 수 없도록 설정 하시오.
+0. 사원 계정 S-USER1, 사원그룹 S-GROUP, 사원 전용 디렉토리 S-LV01 ~ S-LV10
+1. /practice/day10/test 디렉토리 생성
+2. /practice/day10/test 디렉토리로 이동 후 S-LV01 부터 S-LV10 까지 총 10개의 하위 디렉토리 생성
+3. 사용자 계정 및 그룹 생성
+- 계정 명 : S-USER1, I-USER1
+- 그룹 명 : S-GROUP
+4. S-USER1 계정의 기본 그룹을 S-GROUP 으로 변경
+5. S-LV01 ~ S-LV10 모든 디렉토리 설정
+- 소유자와 기타 사용자는 디렉토리 내부 읽기 권한, 파일생성, 수정 권한 및 접근 권한 제거
+- 오직 해당 디렉토리의 그룹 사용자만 모든 권한을 가지도록 설정
+- S-LV01 ~ S-LV10 디렉토리의 소유자는 Root, 그룹 소유자는 사원 그룹으로 설정
+
+# useradd S-USER1
+# useradd I-USER1
+# groupadd S-GROUP
+# mkdir -p /practice/day10/test/S-LV{01..10}
+# usermod -g S-GROUP S-USER1
+# chmod 070 /practice/day10/test/*
+# chown root:S-GROUP /practice/day10/test/*  
+
+사원들만 있던 평화로운 회사에.. 인턴이(I-USER1) 오게되어
+S-LV01 디렉토리만 사용 할 수 있도록 권한을 주어야하는데..
+S-GROUP속하면 S-LV01외에 다른 S-LV디렉토리에도 접근이 가능해진다.
+
+S-USER1 (S-GROUP)  --- rwx --- root S-GROUP 	S-LV01~10
+-------------------------------------------------------------------------
+ACL (Access Contorl List/접근 제어 목록)
+ 디렉토리 및 파일에 특정 사용자, 그룹에 특정 권한(속성)을 부여하는 기능
+ 
+getfacl - 파일과 디렉토리에 ACL 설정 확인 
+getfacl [옵션] [파일명]
+
+옵션 -d 기본 정보에 대해 확인
+     -R 하위 디렉토리 및 파일을 포함하여 정보 확인
+	 
+#파일 및 디렉토리 	이름
+#해당 파일/디렉토리	소유자 
+#해당 파일/디렉토리	소유 그룹
+설정된 사용자 권한 ::rwx
+설정된 그룹   권한 ::rwx
+설정된 기타   권한 ::rwx
+ACL MASK 		   ::rwx
+
+::사이에는 계정명 혹은 그룹명이 채워진다.
+--------------------------------------------------------------------------
+setfacl - 파일과 디렉토리 ACL 설정
+setfacl [옵션] [규칙] [파일명]
+
+옵션
+	-m (modify)	권한을 수정할 때 사용한다.
+	-x 권한을 제거 할때 사용
+	-R 하위 디렉토리및 파일을 포함하여 적용
+	-b 권한 및 mask 등 지정한 권한을 전부 제거
+규칙
+	u:[계정명/UID]:[권한] - 사용자에 대한 ACL설정
+	g:[그룹명/GID]:[권한] - 그룹에 대한 ACL설정
+	o:[권한]			  - 기타 사용자에 대한 ACL 설정
+	
+	권한
+	r, w, x (읽기, 쓰기, 실행) (숫자모드 가능)
+	
+	
+#setfacl -m user:I-USER1:rwx S-LV01	//S-LV01 디렉토리에 I-USER1 rwx 권한부여
+#getfacl S-LV01 	
+	
+#su - I-USER1
+$cd /practice/day10/test	
+$ll 						// '.' 에서 '+' 로 변경 확인	
+$cd S-LV01/					// ls (r) cat > test (w) 이동 (x)
+$cd ..				
+$cd S-LV02					// 접근 불가능
+
+#setfacl -x u:I-USER1 S-LV01 // I-USER1 ACL 제거, 제거시 권한은 필요없음
+#getfacl S-LV01				
+-------------------------------------------------------------------------------
+I-GROUP 생성, I-USER1을 I-GROUP에 속하도록 설정 한 후
+S-LV01 디렉토리에 I-GROUP ACL 설정(rwx)
+S-LV01 외 다른 디렉토리는 접근 불가능
+
+setfacl -m group:I-GROUP:rwx S-LV01
+-------------------------------------------------------------------------------
+ACL MASK
+ -추가되는 퍼미션을 제한하는 값
+ -유효 접근 관리 마스크
+ 
+		ACL MASK -> r-- 		설정
+기존 설정된 권한 -> rw-			
+	적용되는 값  -> r--			실제 적용되는 권한
+	
+#getfacl S-LV01			//group:I-GROUP:rwx 확인
+#setfacl -m m:--x S-LV01	
+#getfacl S-LV01	
+
+세션 로그아웃 -> 로그인 ($I-USER1)
+I-USER -> S-LV01 디렉토리 접근 테스트  cd (x권한)
+                 디렉토리 리스트 출력  ls (r권한 사용불가)
+				 디렉토리 내 파일 생성 cat > tset (w권한 사용불가)
+
+#cd /practice/day10/test/S-LV01
+#pwd /practice/day10/test/S-LV01
+#tocuh test_file{1,2,3}
+#setfacl -R -m g:I-GROUP:rwx S-LV01
+
+#setfacl -b S-LV01			//ACL 및 파일 초기화
+--------------------------------------------------------------------
+- Default ACL
+
+ 디렉토리는 디폴트ACL 가질 수 있는데, 이것은 해당 디렉토리 내에서
+ 생성되는 파일이나 서브 디렉토리의 디폴트ACL이다.
+
+ 
+setfacl -m default:user::rwx   ==	d:u:7 디폴트 ACL 변경
+           default:group::rwx  ==	d:g:7 
+		   default:other::rwx  ==	d:o:7 			
+		   default:mask:rwx	   ==   d:m:7 디폴트 Mask 변경
+   
+
+ACL 사용조건
+- 2.6 버전 이상의 커널에서 동작하며, 오래된 파일 시스템 지원 하지
+  않는다.
+- mv로 이동하면 ACL설정은 유지되나 cp로 복사하면 ACL설정이 사라진다.
+- cp -p 옵션을 붙이면 ACL설정을 유지
+
+
+				 
+				 
+				 
+				 
+				 
+				 
+				 
+				 
+				 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 

@@ -1,0 +1,265 @@
+특수권한의 종류 (SetUID, SetGID, StickyBit)
+
+SetUID
+- 실행파일에 한해서 설정이 가능하며, SetUID 설정이 있는경우 실행한
+  사용자가 아닌 파일을 소유한 사용자의 권한으로 프로세스가 실행된다.
+  
+- SetUID는 보통 root가 소유한 파일에 적용되며 이경우 해당 명령을
+  실행하는 순간에는 root의 권한을 가지게 된다.
+  
+----------------------------------------------------------------------
+SetUID TEST
+
+#useradd user116			//계정 생성
+#passwd user116				//암호 지정
+
+#su - user116				//사용자 계정 스위칭
+$passwd						//일반 사용자 계정 암호 변경
+현재암호입력				//현재 로그인한 계정의 암호 변경
+복잡한 암호 변경
+암호 변경 가능				//일반 사용자 암호 변경 가능
+
+#exit						//root 계정으로 스위칭
+#ll /etc/passwd
+#ll /etc/shadow
+
+#mkdir -p /practice/setuid
+#cd /practice/setuid
+#touch setUID1					//빈파일 생성
+#touch setUID2					//빈파일 생성
+
+#chmod 644 setUID1				// rw- r-- r--
+#chmod 544 setUID2 				// r-x r-- r--
+
+SetUID
+(기호모드 u+s )
+(숫자모드 4000)
+
+#chmod u+s setUID1				//SetUID 설정
+#chmod 4544 setUID2				//SetUID 설정
+
+#ll								
+setUID1				// rwS r-- r-- 기존에 User필드에 x권한 X
+setUID2				// r-s r-- r-- 기존에 User필드에 x권한 O	
+
+#touch setUID3		//파일 생성
+#chmod 400 setUID3	// r-- --- --- root / root
+#ll
+
+#vi setUID3
+
+		SetUID TEST FILE!!!
+
+#su - user116
+$cd /practice/setuid
+$ll 
+setUID1	setUID2 setUID3
+
+setUID3	// r-- --- --- root / root
+
+user116$cat setUID3
+$exit
+#ll /bin/cat				
+#chmod u+s /bin/cat			//setUID 설정 
+#ll /bin/cat				//확인 rws r-x r-x
+
+#su user116
+$pwd
+/practice/setuid
+$cat setUID3			    //읽기 가능
+
+원상복구
+/bin/cat -> SetUID 제거
+#chmod u-s /bin/cat	
+#ll /bin/cat
+---------------------------------------------------------------------
+SetGID
+- 프로세스가 실행한 그룹이아닌 파일의 소유 그룹 권한으로 실행된다.
+- 파일에는 거의 쓰이지 않으며 주로 디렉토리에 사용한다.
+
+SetGID 설정
+- 기호모드 ( g+s )
+- 숫자모드 ( 2000)
+
+groupadd WEB_ADMIN
+groupadd WEB_USER
+useradd -g WEB_ADMIN web-admin1
+useradd -g WEB_USER web-user1
+
+/home			
+권한 	   소유자	  수유 그룹  디렉토리명
+drwx------ web-admin1 WEB_ADMIN  web-admin1
+drwx------ web-user1  WEB_USER   web-user1
+
+#cd /home/web-user1
+#touch SetGID1
+#ll
+rw-r--r--  root root		SetGID1		//현재 로그인한계정의 소유권
+										//따라감
+#cd ..     (/home)
+#chmod g+s /home/web-user1				//디렉토리에 SetGID설정
+#ll										//rwx--S---
+#cd /home/web-user1
+#touch SetGID2							//파일 생성
+#touch SetGID3							//파일 생성
+#ll
+rw-r--r--  root root		SetGID1
+rw-r--r--  root WEB_USER	SetGID2
+rw-r--r--  root WEB_USER	SetGID3
+#cd ..
+#ll /home/web-user1
+
+rwx--S---	web-user1 WEB_USER web-user1
+
+web-admin1의 홈디렉토리에 SetGID 설정을하여 web-admin1의 홈디렉토리
+에서 생성하는 모든 파일은 web-admin1의 그룹에 포함되도록 설정하여라.
+
+팀 단위로 작업할 경우 모든 사용자가 파일을 공유하도록 할때 사용된다.
+---------------------------------------------------------------------
+StickyBit
+- 모든 사용자가 생성/수정/삭제가 가능한 디렉토리에 적용을하며,
+ StickyBit 설정 후에는 해당 파일의 소유자만 해당파일을 삭제할 수 있다.
+
+기호모드 (o+t )
+숫자모드 (1000)
+ 
+#mkdir /practice/temp1 temp2
+chmod 1777 temp1
+chmod 777 temp2
+
+#cd temp1				
+#touch sticky_test			//빈 파일 생성
+#chmod 777 sticky_test		//권한 변경 (rwx rwx rwx)
+#cp ./sticky_test ../temp2	//temp2 디렉토리에 sticky_test 파일 복사
+
+temp1디렉토리에 sticky_test(777)파일 확인
+temp2디렉토리에 sticky_test(777)파일 확인
+
+#su - user116
+$cd /practice/temp1
+$ls
+sticky_test		(rwx rwx rwx)
+
+$vi sticky_test
+내용입력(파일수정)
+저장 여부 확인
+$cat sticky_test
+
+$cd /practice/temp2
+$ls
+sticky_test		(rwx rwx rwx)
+내용입력(파일수정)
+저장 여부 확인
+$cat sticky_test
+
+$cd ..  $cd /practice
+$ll
+rwx rwx rwt	/temp1
+rwx rwx rwx	/temp2
+---------------------------------------------------------------------
+umask - 새로운 파일/디렉토리 생성 시 기본 허가권을 결정하는
+        기준이 되는 값 (기본값 0022)
+		
+		파일의 기본 허가권     666
+		디렉토리의 기본 허가권 777
+
+#umask 		// 현재 시스템 umask 값을 출력
+#umask [값] // umask를 해당 [값]으로 변경
+
+				디렉토리 허가권			파일 허가권
+기본값 			777						666
+UMASK			022						022
+결정된 허가권	755						644
+기호모드 		rwx r-x r-x				rw- r-- r--
+
+#mkdir umsk_dir			//디렉토리 생성 
+#touch umask_file		//파일 생성
+
+#ll
+umask_dir		rwx r-x r-x
+umask_file   	rw- r-- r--
+#umask
+#vi /etc/login.defs
+디폴트 umask 077 ->  생성 700 (rwx --- ---)
+
+#cd /home
+#ll
+
+#umask 020
+디렉토리 : 757 (rwx r-x rwx)
+파일     : 646 (rw- r-- rw-)
+
+
+일반사용자 계정으로 아래 명령어 테스트
+ 
+디렉토리 읽기(ls)	r
+파일 생성 (touch)	w
+디렉토리 접근 (cd)  x
+
+#mkdir test_dir
+#chmod 000 test_dir		(--- --- ---)
+#chmod 001 test_dir		(--- --- --x)
+#chmod 002 test_dir		(--- --- -w-)
+#chmod 003 test_dir		(--- --- -wx)
+#chmod 004 test_dir		(--- --- r--)
+#chmod 005 tset_dir		(--- --- r-x)
+#chmod 006 tset_dir		(--- --- rw-)
+#chmod 007 tset_dir		(--- --- rwx)
+
+---------------------------------------------------------------------
+속성 (attribution)
+chattr - 속성 변경 시 사용
+lsattr -  속성 확인 시 사용
+속성 종류
+i 속성 (Immutable)
+	- 해당파일의 변경, 삭제, 이름 변경뿐 아니라 파일추가
+	  링크파일도 만들 수 없다.
+	- 변경이 거의 없는 시스템 중요한 부팅관련 파일들에
+      설정을하면 부팅되지 않는 문제로 인한 시스템 장애를 줄일 수 있다.
+	  	
+a 속성 (append only)
+	- 해당파일에 추가만 할 수 있으며, 파일보안을 위해 주로 사용하는
+	  속성이다.
+	- 디렉토리에 설정하면 해당 디렉토리에 파일을 생성만 할 수 있다.
+
+e 속성
+	ext4 포멧을 ext3 포멧으로 변형시켜 주는 것
+
+#chattr [옵션] [기호] [파일]
+기호	
+	연산자		의미
+	+			지정한 속성을 추가
+	-			지정한 속성을 제거
+	=			기존 속성 제거 후 지정한 속성만 부여
+	
+옵션
+	-R 	 하위 디렉토리 및 파일을 포함하여 모두 적용
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
