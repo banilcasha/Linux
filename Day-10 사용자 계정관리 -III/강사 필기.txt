@@ -1,0 +1,195 @@
+사용자 계정 특징과 생성과정
+
+- 계정의 이름과 자신의 고유한 UID와 그룹을 나타내는 GID가 있다.
+- /etc/default/useradd 와 /etc/login.defs에 정의된 내용을 바탕으로
+  사용자 계정의 각종 정보와 암호정책에 의해서 생성된다.
+- 생성된 계정은 /etc/passwd와 shadow, group 파일에 계정의 정보가
+  저장된다.
+- 홈디렉토리 생성 시 /etc/skel 디렉토리에 파일을 홈디렉토리에
+  복사를 한다.
+
+------------------------------------------------------------------
+그룹 생성 및 수정
+- 특정 디렉토리 및 파일의 접급을 권하이 있는 계정만 허용하기 위해
+  해당 계정들을 그룹단위로 묶어 관리 할 수 있다.
+  
+#groupadd WEB_USER			//WEB_USER 그룹생성
+#cat /etc/group	| tail -1	//WEB_USER 그룹생성 확인
+#groupmod -g 800 WEB_USER	//WEB_USER GID를 800번으로 수정
+#cat /etc/group	| tail -1	//변경 확인
+
+#groupadd WEB_ADMIN				//WEB_ADMIN 그룹생성
+#groupmod -g 900 WEB_ADMIN		//WEB_ADMIN GID를 900번으로 수정
+
+#useradd -g 800 web-user1		//GID를 지정하여 계정생성
+#useradd -g 900 web-admin1		//GID를 지정하여 계정생성
+
+#cat /etc/passwd | tail -2		//4번째 필드 GID부분 800,900확인
+
+#groups [사용자계정명]			//해당 계정의 그룹 확인 시 사용
+#groups web-user1				//web-user1 계정의 그룹 확인
+#groups web-admin1				//web-admin1 계정의 그룹 확인
+#groups web-user1 web-admin1    //복수지정 가능
+-----------------------------------------------------------------
+디렉토리 및 파일의 권한과 소유권
+
+- 시스템에 있는 모든 파일과 디렉토리는 접근할 수 있는 권한 및
+  소유권이 부여되어 있다.
+- 파일이나 디렉토리의 접근을 제한 하는 것은 허가권(Permission)
+- 파일이나 디렉토리의 소유권한을 소유권(Ownership)이라한다.
+-----------------------------------------------------------------
+ll 명령어 필드의 의미
+파일업로드
+-----------------------------------------------------------------
+chown - 소유권 변경
+
+chown [소유계정][소유그룹][파일명]
+
+#cd /home/web-user1
+#ll 
+
+#chown web-admin1 test    //소유계정 변경 web-user1 -> web-admin1
+#chown web-user1 test
+#chown web-admin1:WEB_ADMIN	test //test파일의 소유계정 및 그룹 변경
+#chown web-user1.WEB_USER test   //test파일의 소유계정 및 그룹 변경
+		
+		web-user1  WEB_USER
+#chown :WEB_ADMIN test
+
+-----------------------------------------------------------------
+허가권 (Permission)
+
+파일유형 필드에 퍼미션 구조
+- 읽기 권한, 쓰기 권한, 실행 권한 등 세가지 필드로 구성되어 있다.
+
+-				r w x		r w x		r w x
+파일유형	  User(사용자) Group(그룹)  Other(기타사용자)
+
+rwx의 의미
+r : 디렉토리/파일을 읽을 수 있는 권한 (Read)
+w : 디렉토리/파일을 생성, 삭제, 수정 권한 (Write)
+x : 디렉토리 접근, 파일은 실행 권한	(access/eXcute)
+- : 해당 권한이 없는 경우 (bar)
+
+rwx r-x r-x - 소유자는 읽기, 쓰기, 실행 권한을 모두 가지고있고
+              그룹과 기타 사용자는 읽기와 실행권한만 가지고 있다.
+
+rw- --- --- - 소유자만 읽기, 쓰기 권한이 있고, 그룹과 기타 사용자는
+              아무 권한이 없다
+
+r-x r-x r-x	- 소유자, 그룹, 기타사용자 모두 읽기, 실행권만 있다.
+
+chmod - 허가권 변경 (change mode)
+두가지 모드로 허가권 변경 할 수 있다.
+1. 기호 모드 (상대값) (symbolic method) 사람의 입장
+2. 숫자 모드 (절대값) (absolute method) 컴퓨터의 입장
+
+chmod [옵션] [기호/숫자 모드] [파일/디렉토리]
+
+1. 기호모드
+
++ : 허가 권한 부여		u : 사용자(소유자) 권한
+- : 허가 권한 제거      g : 그룹 권한 
+= : 허가 권한 유지      o : 기타 사용자 
+                        a : 사용자, 그룹, 기타 사용자 모두 
+s : SetUID, setGID
+t : sticky bit
+
+설명 - 대상 (u,g,o,a)에 대해서 r,w,x 권한을 부여할 것인가 제거
+       할 것인가를 모두 기호로 설정하는것
+	   
+ex) dongsam의 권한이 rwx r-x r-x 이다.
+기타사용자의 실행권한 제거 -> rwx r-x r--
+#chmod o-x dongsam         -> rwx r-x r--
+
+rwx r-x r--   -->		r-- r-- ---
+#chmod u-wx,g-x,o-r dongsam
+
+
+r-- r-- ---	  --> 		rwx rwx rwx
+#chmod a+rwx dongsam
+#chmod u+wx,g+wx,o+rwx dongsam
+
+--- --- --- 
+chmod o+r /etc/shadow
+
+ll -> --- --- r--
+
+su - ronaldo
+cat /etc/shadow
+
+2. 숫자모드 - 각각의 허가권 필드를 3자리의 8진수 표기
+- 완전한 표기법은 4자리 이나 일반적으로 3자리를 사용
+
+사용자필드		허가		기호모드		절대모드
+
+사용자 			읽기		r				400 (100단위)
+				쓰기		w				200 
+				실행		x				100
+				
+그룹			읽기		r				40 (10단위)  
+				쓰기		w				20
+				실행		x				10
+				
+기타사용자		읽기		r				4  (1단위)
+				쓰기		w				2
+				실행		x 				1
+ex) rwx r-x r-x
+사용자 	   - rwx 400 + 200 + 100 = 700
+그룹   	   - r-x 40  +        10 =  50
+기타사용자 - r-x 4   +         1 =   5
+숫자모드 표기법 = 755			  
+
+사용자 필드		사용자			그룹		기타사용자
+퍼미션			r  w  x         r  w  x     r  w  x 
+자리수			4  2  1         4  2  1     4  2  1 
+2진수           1  1  1         1  1  1     1  1  1
+8진수 			   7               7           7
+
+ex)				r  w  x         r  -  x     r  -  x
+				1  1  1         1  0  1     1  0  1
+		           7               5           5 
+				   
+rwx r-- rw- -> 7 4 6
+r-x r-x --- -> 5 5 0
+rw- --x -w- -> 6 1 2		
+
+rwx r-- r-- 	-> 744
+rwx r-x r-x		-> 755
+rw- rw- rw- 	-> 666
+
+/etc/shadow  --- --- r--    ---->  --- --- --- 
+숫자모드 : chmod 000 /etc/shadow
+
+
+사용자 계정 추가 #useradd -g WEB_USER web-user2
+
+1. web-user1의 홈디렉토리 web-user2가 접근이 가능하도록
+권한을 수정
+
+2. 단, web-user2의 홈디렉토리는 소유자 소유그룹외에 모든
+   사용자가 접근이 가능하도록 권한을 수정
+   
+
+   
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  

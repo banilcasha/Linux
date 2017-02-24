@@ -1,0 +1,23 @@
+공유폴더 ip명: \\192.168.100.14\
+VMware 비번 : password1!
+
+Day-1 리눅스 환경 구축
+-----------------------------------------------------------------------------------
+가상머신(virtual Machine, VM)
+- Computing 환경을 Software로 구현한 것이다.
+- 호스트 운영체제 (Host OS)에서 생성한 가상의 컴퓨터(VM)을 이용하여 다른 운영체제를 (Guest OS) 설치하게 되면 호스트 운영체제로 부터 독립된 환경을 만들 수 있다.
+
+VMware
+- 안정적으로 서비스가 가능하고, 전세계적으로 널리 사용하고 있는 가상머신 소프트웨어다.
+
+실습 가능 컴퓨터 확인
+- https:\\www.grc.com/securable.htm
+
+3대의 Linux와 1대의 Windows 설치하여 가상ip를 설정한 후, 사용할 예정.
+
+snapshot 찍기
+-power off한 상태에서 찍는 것이 불필요한 큰 용량을 낭비하지 않게된다.
+
+VMware 단축키
+-Ctrl+Alt : 마우스 포커스를 호스트로 옮길떄
+-Ctrl + Alt + Insert : 게스트OS에서 Ctrl+Alt+Delete 이용시 사용

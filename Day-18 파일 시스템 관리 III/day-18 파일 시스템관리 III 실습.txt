@@ -1,0 +1,49 @@
+﻿1. 스냅샷을 이용, 초기 상태로 설정 후 0.25GB (256MB) Dsik 3개 추가 및 재부팅 
+2. 추가한 Disk 모두 주 파티션 1개로 Partition 생성
+3. 파일 시스템 생성			/dev/sdb1 타입 - ext3
+					/dev/sdc1 타입 - ext3
+			
+4. 계정 및 그룹 생성
+	계정명 : q-user1, q-user2
+	그룹명 : q-group
+	
+	조건 : q-user1 의 홈디렉토리  /q-home/q-user1
+	       q-user2 의 홈디렉토리  /q-home/q-user2
+
+	       q-user2 의 그룹 		  q-group
+			
+5. /dev/sdb1 Disk를 q-user1 의 홈디렉토리에 마운트
+   /dev/sdc1 Disk를 q-user2 의 홈디렉토리에 마운트
+
+6. 부팅 시 자동으로 읽을 수 있도록 아래 조건에 맞게 /etc/fstab에 등록
+	(1) UUID 사용
+	(2) 마운트 옵션 default
+	(3) 덤프 생성 및 디스크 검사 사용 안함
+
+7.
+/q-home/q-user1 홈디렉토리 소유권 변경 q-user1:q-user1
+chown -R q-user1:q-user1 /q-home/q-user1
+
+/q-home/q-user2 홈디렉토리 소유권 변경 q-user2:q-group
+chown -R q-user2:q-group /q-home/q-user2
+
+cp /etc/skel/.b* /q-home/q-user1
+cp /etc/skel/.b* /q-home/q-user2
+rm -rf /q-home/q-user1/*
+rm -rf /q-home/q-user2/*
+
+
+결과
+[root@Server-A q-home]# ll
+합계 2
+drwxr-xr-x. 2 q-user1 q-user1 1024 2017-01-20 12:17 q-user1
+drwxr-xr-x. 2 q-user2 q-group 1024 2017-01-20 12:17 q-user2
+
+[root@Server-A q-home]# df -h
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/sda3        19G  759M   18G   5% /
+tmpfs           491M     0  491M   0% /dev/shm
+/dev/sda1       190M   31M  150M  17% /boot
+/dev/sdb1       248M  6.1M  230M   3% /q-home/q-user1
+/dev/sdc1       248M  6.1M  230M   3% /q-home/q-user2
+	

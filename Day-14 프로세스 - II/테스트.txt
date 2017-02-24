@@ -1,0 +1,90 @@
+작업 예약 at & cron
+- 주기적으로 반복해야 하는 작업에 사용하는 데몬
+
+at
+#rpm -qa | grep at 			// at 사용하기 위한 패키지 설치 유무 확인
+#rpm -qa | grep mail        // mail 패키지 설치 유무 확인
+#yum -y install at				//at 패키지 설치	
+#yum -y install mail     		//mail 패키지 설치
+#rpm -qa | grep at 			// at 사용하기 위한 패키지 설치 유무 확인
+#rpm -qa | grep mail        // mail 패키지 설치 유무 확인
+
+cron 설치
+#rpm -qa | grep cron		// 설치 유무 확인
+
+at 
+기능 - 정해진 시간에 한번 실행
+형식 - at [옵션] [시간]
+옵션 -l 현재 실행 대기중인 목록을 출력 (#atq)
+       -r 현재 실행 대기중인 명령에서 해당 작업 번호 삭제 (#trm)
+
+#yum -y install man			//man 패키지 설치
+시간 형식
+yyyy-mm-dd,HH:MM, HHMM,today,tomorrow,hours,days,weeks,now
+midnight,teatime
+
+ex) #at 6pm + 4days		 //지금 부터 4일 후 오후6시에 작업을 수행
+     #at 10am jul 18      //7월18일 오전 10시에 작업을 수행
+	 #at 3am tomorrow  //내일 오전3시에 작업을 수행
+	 #at 10:00am today  //오늘 오전 10시에 작업을 수행
+
+#service atd start	 
+	 
+#at now + 1min
+at>mkdir -p /practice/01-19
+at>echo "at test!!" > /practice/01-19/at-test
+at><EOT>													//Ctrl + D 저장
+
+#atq
+[작업번호] [날짜] [시간] [큐이름] [사용자계정]
+3	2017-01-18 01:53 a root
+
+at 예약 작업은 /var/spool/at 디렉토리에 큐 파일이 임시 저장된 후,
+작업이 완료되면 자동으로 삭제되며, 명령의 실행 결과는 /var/spool/mail
+디렉토리에 사용자 명으로 결과가 저장된다.
+
+at의 사용권한 설정
+- /etc/at.allow 파일이 있으면, at.allow에 명시된 사용자만 사용이 가능.
+- /etc/at.allow 파일이 없다면, at.deny에 명시된 사용자를 제외하고 사용 가능.
+- 두 파일 모두 없다면 root 만 사용이 가능.
+- 두 파일 모두 이름이 있다면 /etc/at.allow가 우선 적용되어 at 사용 가능
+- at.deny 파일을 빈파일로 두면 모든 사용자가 at 명령어 실행 가능 (기본값)
+
+- /etc/at.allow 파일이 있으면, at.allow에 명시된 사용자만 사용이 가능.
+1.vi /etc/at.allow						ronaldo
+#su - messi
+   $at 								//사용 불가능
+2.mv /etc/at.allow /etc/at.allow.bk
+  vi /etc/at.deny 						ronaldo
+  #su - ronaldo					     	//스위칭
+  $at										//ronaldo 계정 사용 at 사용 불가능 확인
+  $exit									//다시 루트 계정으로 로그아웃
+  #su - messi							//messi 계정으로 스위칭
+  $at										//사용 가능 확인
+  $exit									//로그아웃
+										
+- 두 파일 모두 없다면 root 만 사용이 가능								
+#mv /etc/at.deny /etc/at.deny.bk
+#su - ronaldo 							// 스위칭
+$at
+$exit										// 로그아웃
+#su - messi								// 스위칭
+$at
+$exit										// 로그아웃
+- 두 파일 모두 이름이 있다면 /etc/at.allow가 우선 적용되어 at 사용 가능
+#mv /etc/at.deny.bk  /etc/at.deny
+#mv /etc/at.allow.bk /etc/at.deny.allow
+#vi /etc/at.deny			
+	ronaldo					두 파일 모두 동일한 계정 입력 후 저장
+#vi /etc/at.allow
+	ronaldo 
+#su - ronaldo
+$at 
+
+
+
+
+
+
+
+

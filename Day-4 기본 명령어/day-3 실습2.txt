@@ -1,0 +1,27 @@
+1. /practice/day4/file_test/ 디렉토리 생성
+2. /practice/day4 디렉토리 아래 하위 디렉토리 생성
+			
+단, 명령어 한줄을 이용.
+	
+3. /bin 경로에 있는 a로 시작하는 모든 파일을 /practice/day4/file_test/bin_a경로에 복사.
+   /bin 경로에 있는 b로 시작하는 모든 파일을 /practice/day4/file_test/bin_b경로에 복사
+   .
+	/practice/day4/file_test/bin_a		cp /bin/a* /practice/day4/file_test/bin_a/
+	/practice/day4/file_test/bin_b		cp /bin/b* /practice/day4/file_test/bin_b/					
+
+	4. /etc/resolv.conf 파일을 /practice/day4/ 디렉토리로 복사하시오.
+#cp /etc/resolv.conf /practice/day4/
+	
+5. /practice/day4/resolv.conf 파일의 내용과 /etc/resolv.conf 파일이 
+   동일한 내용 인지 확인.
+#cat /practice/day4/resolv.conf
+#cat /etc/resolv.conf
+   
+6. /practice/day4/backup 디렉토리 생성 후
+   /practice/day4/resolv.conf 파일을 /practice/day4/backup으로 이동
+#mkdir /practice/day4/backup
+#mv /practice/day4/resolv.conf /practice/day4/backup/
+   
+7. /practice/day4/ 디렉토리아래 어제 날짜로 yesterday 파일을 생성
+   #touch -t YYYYMMDDhhmm yesterday
+   #ll (ls -l)		//파일명 시간 확인

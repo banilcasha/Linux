@@ -1,0 +1,196 @@
+Root 패스워드 분실 시
+1. rebooting
+2. grub 부팅 메뉴
+3. 'e' 키눌러 수정 메뉴 진입
+4. 2번째 Kenel vmliuz 옵션에서 'e' 키 입력하여 옵션 수정
+5. 마지막에 1 혹은 single 입력 후 'enter'
+6. 'b' 키 눌러서 부팅 진행
+
+passwd [계정명]
+#passwd root		//root 계정의 암호를 변경
+#passwd				//현재 로그인한 계정의 암호를 변경
+
+yum -y install vim		//vim 설치 명령어
+$1$Pyvt7/$euO2vUMBC7xMjAWFWRQpw.
+#vi /boot/grub/grub.conf
+password --md5 [암호화 키값]
+
+
+파일 디스크립터 (File Discriptor, fd)
+- 리눅스의 일반 파일이나 장치파일을 포함한 모든 파일을 관리하는
+  방식
+  
+- 표준 입력장치 (키보드) fd/0 stdin
+- 표준 출력장치 (모니터) fd/1 stdout
+- 표준 에러장치 (모니터) fd/2 stderr
+
+리다이렉션(Redirection)
+- 표준 입력과 출력의 방향을 재지정하는 방법
+
+명령어 입력      (키보드/표준입력)
+명령어 결과 출력 (모니터/표준출력)
+
+출력 리다이렉션
+[명령어] 1> [파일이름] - 파일 생성 및 덮어쓰기
+
+# mkdir /practice/day7
+# cp /etc/resolv.conf /practice/day7/
+# cd /practice/day7
+# cat resolv.conf
+// 표준입력, 표준출력
+# cat resolv.conf 1> redirection_test
+// 표준입력 -> 출력을 파일로 지정
+
+
+cat > [파일명]	// 새로운 [파일명]으로된 파일 생성
+				// 파일의 내용을 입력 한 후 enter(개행)
+				// Ctrl + D (저장) == vi [파일명]
+
+cat > cat1
+abc
+Ctrl + D (저장)
+
+cat > cat1
+def
+Ctrl + D (저장)
+
+Bash 쉘에서 파일 덮어쓰기 방지하기 설정
+set -o noclobber		// 덮어쓰기 방지 Enable
+set +o noclobber		// 덮어쓰기 방지 Disable
+
+추가 리다이렉션
+[명령어] >> [파일명]
+#ls > ls_tset		//ls결과를 ls_tset 파일로 저장
+#cat ls_test		//결과 확인
+#date >> ls_test	//date의 출력결과를 ls_test에 추가
+#cat ls_test		//결과 확인
+#pwd >> ls_test		//pwd의 출력과그를 ls_test에 추가
+#cal >> ls_test
+#cat ls_test
+
+오류 리다이렉션
+#ls error_test			// 오류 메시지 발생
+#ls error_test 1> err1  // 표준 출력이없어 내용 없음 
+#ls error_test 2> err1  // 에러 메시지가 저장이됨
+                 표준에러 출력결과를 err1 파일에 저장
+
+오류 메시지 출력 하지 않기
+/dev/null - 리눅스 특수 장치 파일로서 파일의 내용을
+            지우거나 오류메세지를 해당 파일로 리다이렉션
+            하여 출력하지 않을 수 있다.
+
+cat ls_test 1> /dev/null
+	//정상적인 표준출력결과를 /dev/null 장치로 리다이렉션
+	
+cat ls_test 2> /dev/null 
+	//오류가 출력되는 결과를 /dev/null 장치로 리다이렉션
+	//정상적인 표준출력결과는 나와야함
+
+ls / 1> /dev/null	
+ls / 2> /dev/null
+
+표준입력 리다이렉션
+
+#vi test_re
+
+1	environment
+10	company
+6	government
+9	face
+8	race
+2	plant
+
+#sort -n < test_re
+#head -1 < test_re
+ 
+#tail -1 < test_re > test_re123
+2	plant
+환경변수
+
+쉘 환경 변수의 종류
+1. 지역 환경 변수(쉘 변수)
+2. 전역 환경 변수(환경 변수)
+
+환경 변수의 종류
+$PATH 			실행 파일을 찾을 경로
+$HOME			현재 사용자의 홈디렉토리
+$LANG			쉘에서 사용하는 언어
+$SHELL			로그인 시 사용하는 쉘
+$HISTSIZE		히스토리 파일에 저장되는 갯수
+$HOSTNAME		호스트의 이름
+$PS1			프롬프트
+
+echo [변수명]
+
+(1)지역 환경 변수
+- 현재 사용 쉘에서만 적용되는 변수
+
+- 변수 선언 및 초기화 
+	변수명=값	(변수명 = 값 공백X)
+
+- 변수 해제
+	unset 변수명
+	
+- 변수 확인
+	set
+
+(2)전역 환경 변수
+- 모든 쉘에 적용되는 변수
+
+- 변수 선언 및 초기화
+	export 변수명=값
+	
+- 변수 해제
+	unset 변수명
+- 변수 확인
+	env
+
+----------------------------------------------------------
+지역 환경 변수 테스트
+#LOCAL=test			//지역변수 LOCAL에 test대입
+#set | grep LOCAL	//지역변수 LOCAL 설정 확인
+#echo $LOCAL		//지역변수 LOCAL 출력 확인
+
+#/bin/bash			//bash 쉘로 변경
+#echo $LOCAL		//지역변수 LOCAL 출력값 확인
+exit
+#echo $LOCAL		
+#/bin/bash
+#echo $LOCAL
+#set | grep LOCAL
+#exit
+#unset LOCAL		//LOCAL 변수 해제
+#set | grep LOCAL	//LOCAL 변수 해제 확인
+----------------------------------------------------------
+전역 환경 변수 테스트
+#export GLOBAL=test		//전역변수 GLOBAL에 test 값 대입
+#echo $GLOBAL		
+#/bin/bash
+#echo $GLOBAL
+#GLOBAL=test2			//지역변수 GLOBAL에 test2 값 대입
+#echo $GLOBAL			//전역변수보다는 지역변수가
+                          우선순위가 높다
+#exit
+#echo $GLOBAL
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

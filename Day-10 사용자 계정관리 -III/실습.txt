@@ -1,0 +1,24 @@
+1. 계정 생성 - 계정 명 : "ronaldo", "messi"
+2. 그룹 생성 - "RM", "BC", "POR", "ARG" 
+			
+			 - GID : RM - 650
+			 -		 BC - 660
+			 -		 PORT -750
+			 -		 ARG - 760
+
+3. root 계정으로 "ronaldo" 계정의 홈디렉토리에서 vi를 이용하여 "team", "nation" 파일 생성 및 내용 작성
+- 파일의 내용은 "team" 파일에는 Football Club, "nation" 파일에는 "nation" "team" 작성 후 저장
+	
+4. root 계정으로 messi 계정의 홈디렉토리에서 vi를 이용하여 "team", "nation" 파일 생성 및 내용 작성
+- 파일의 내용은 "team" 파일에는 Football Club, "nation" 파일에는 "nation" "team" 작성 후 저장
+
+5. ronaldo 계정의 홈디렉토리 "team" 파일의 소유자는 "ronaldo"로 소유 그룹은 "RM"  로 변경
+						   "nation" 파일의 소유자는 "ronaldo"로 소유 그룹은 "POR" 로 변경
+
+6. messi 계정의 홈디렉토리 "team" 파일의 소유자는 "messi"로 소유 그룹은 "BC"  로 변경
+						 "nation" 파일의 소유자는 "messi"로 소유 그룹은 "ARG" 로 변경
+
+7. ronaldo 계정의 기본 그룹은 "POR" 보조그룹은 "RM" 로 변경
+8. messi   계정의 기본 그룹은 "ARG" 보조그룹은 "BC" 로 변경
+
+9. ronaldo 및 messi 계정의 그룹 확인 (명령어를 이용)

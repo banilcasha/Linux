@@ -1,0 +1,25 @@
+﻿1. /practice/day5/ 디렉토리로 이동 후 resolve_test 라는 이름으로 파일 생성
+	파일 이름 : resolve_test
+	내	   용 : nameserver 8.8.8.8
+				nameserver 8.8.4.4
+2. 생성된 파일 내용 확인 시 아래와 같이 나오는 지 확인
+	nameserver 8.8.8.8
+    nameserver 8.8.4.4
+3. /etc/resolve.conf 파일의 이름을 /etc/resolve.conf_bk로 변경
+4. /practice/day5/resolve_test 파일을 /etc/resolve.conf 로 이름을 변경하면서 복사
+5. /etc/resolve.conf 파일 정상적으로 복사되었나 확인
+	단, grep 명령어를 이용하여 확인 
+6. 공유 폴더에 test파일을 Xshell로 이동 후 아래 실습 진행
+7. test파일을 "/practice/day5/"디렉토리아래 이동 후로 이름을 "vi_test" 변경 
+8. vi로 vi_test을 열어 번호가 출력 되도록 설정 후 진행
+9. 3번째 행을 복사하여 문서아래 쪽에 붙여 넣기. (단, 방향키 금지) 
+10. 10번째 행부터 13번째행까지 복사하여 20번째 행에 붙여넣기
+	(단, 방향키 금지, 한번에 복사 후 붙여 넣기)
+11. 4번째 행 삭제 - (단, 방향키 금지)
+12. 30번째 행 부터 40번행 까지 삭제 - 단, 방향키 금지, 한번에 삭제
+13.	8. angel 				8, 9번 라인 중간에 "99. VI TEST" 입력 (Enter 금지)
+	9. background 	
+
+14. 문서에 있는 a를 z로 변경, 문서에 있는 b를 모두 g로 변경
+15. 저장 후 종료. 단, :wq 금지
+

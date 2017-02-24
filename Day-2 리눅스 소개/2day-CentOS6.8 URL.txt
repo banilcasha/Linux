@@ -1,0 +1,4 @@
+CentOS 6.8 Download URL
+http://ftp.neowiz.com/centos/6.8/isos/x86_64/CentOS-6.8-x86_64-bin-DVD1.iso
+http://ftp.daumkakao.com/centos/6.8/isos/x86_64/CentOS-6.8-x86_64-bin-DVD1.iso
+http://ftp.kaist.ac.kr/CentOS/6.8/isos/x86_64/CentOS-6.8-x86_64-bin-DVD1.iso
